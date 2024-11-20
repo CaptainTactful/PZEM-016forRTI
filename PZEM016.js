@@ -13,10 +13,7 @@ var g_debug = Config.Get("DebugTrace") == "true";
 var g_comm = new Serial(OnCommRx, parseInt(Config.Get("SerialPort"), 10), parseInt(Config.Get("BaudRate"), 10), 8, 1, "None", "None");
 g_comm.SetTxInterMsgDelay(100);
 // The heartbeat function is only used to determine if the device is connected or not. Quote from forum
-g_comm.EnableHeartbeat(1000, SendHeartbeat, OnConnect, OnDisconnect); // this creates a reaction to a lack of unsolicited feedback from the device, not linked to the timer created for polling.
-//g_comm.AddRxFraming("FixedLength", 24);
-//g_comm.AddRxFraming("StopChar", '\r');
-//g_comm.AddRxFraming("StartStopChar", '#', '\n');
+g_comm.EnableHeartbeat(3000, SendHeartbeat, OnConnect, OnDisconnect); 
 var e_Poll = Config.Get("EPollinID") == "true";
 var pollRate = (Config.Get("PRate")*1000);
 //
@@ -66,7 +63,7 @@ var pollingTimer = new Timer();
 		pollingTimer.Stop();
 		}
 		
-function PollEvent() // outbound status check
+function PollEvent() 
 	{
 	pollingTimer.Start(PollEvent, pollRate);
 		SystemVars.Write("TimeOfLastCheck", (System.GetLocalTime()));
@@ -95,26 +92,34 @@ if (data.length == 74)
 	  	SystemVars.Write("watthrs",dataINTwatthrs);
 	  datastringfrequency = (data.slice(51,53)) + (data.slice(54,56))
 	  dataINTfrequency = parseInt(datastringfrequency,16)
-	  	SystemVars.Write
+	  	SystemVars.Write("frequency100dp2",dataINTfrequency);
 	  datastringpf = (data.slice(57,59)) + (data.slice(60,62))
 	  dataINTpf = parseInt(datastringpf,16)
-	  SystemVars.Write("TimeOfLastDataParse", (System.GetLocalTime()));
+	  	SystemVars.Write("powerfactor100dp2",dataINTpf);
+	  	SystemVars.Write("TimeOfLastDataParse", (System.GetLocalTime()));
   }   else {
 
-	  SystemVars.Write
+	 
   }
-	SystemVars.Write("RXdata", data);
-	SystemVars.Write("TimeOfLastConfirmedAction", (System.GetLocalTime()));//
+	SystemVars.Write("RXdata", datastringmain);
+	SystemVars.Write("TimeOfLastRX", (System.GetLocalTime()));//
 	
-//if (data == "\x33\x3C\x00\x00\x00\x01\x01\x71") {  //relay 1 is on
-	//	g_comm.HeartbeatReceived();
-	//    SystemVars.Write("relay1integer",1);
-	//    SystemVars.Write("relay1ONboolean",true);
-	 //   SystemVars.Write("relay1OFFboolean",false);
-	 //   System.SignalEvent("relay1ONevent");	
-	//	}
 
 	
 }
-	
+//External Function calls 
+function Requestdata() 
+{
+	g_comm.Write("\x01\x04\x00\x00\x00\x0A\x70\x0D");
+}
+function Resetwh()
+{
+    g_comm.Write("\x01\x42\x80\x11");
+}
+function storeday1total()
+{
+    SystemVars.Write("day1totalwh",dataINTwatthrs);
+    SystemVars.Write("day1dateandtime", (System.GetLocalTime()));
+}
+
 	
