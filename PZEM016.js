@@ -74,83 +74,45 @@ function PollEvent() // outbound status check
 // 01 04 00 00 00 0A 70 0D copied from cas modbus scanner
 	}
 
-function OnCommRx(data)
+function OnCommRx(data) // example returned string 01 04 14 09 59 02 04 00 00 03 85 00 00 12 29 00 00 01 F3 00 49 00 00 D3 EA (09 59 is 0x0959 = 2393 volts) 
 {
     
-  if (data.length == 36)
+if (data.length == 74)
   {
-datastringmain = data.slice(9,36)
-    
-  }   
-  //buffer = buffer.concat(data);
+	  g_comm.HeartbeatReceived();
+          datastringmain = data.slice(0,62)
+          datastringvolts = (data.slice(9,11)) + (data.slice(12,14))
+	  dataINTvolts = parseInt(datastringvolts,16)
+	  	SystemVars.Write("volts10dp1",dataINTvolts);
+	  datastringcurrent = (data.slice(15,17)) + (data.slice (18,20))
+	  dataINTcurrent = parseInt(datastringcurrent,16)
+	  	SystemVars.Write("current1000dp3",dataINTcurrent);
+	  datastringwatts = (data.slice(27,29)) + (data.slice(30,32))
+          dataINTwatts = parseInt(datastringwatts,16)
+	  	SystemVars.Write("watts",dataINTwatts); 
+	  datastringwatthrs = (data.slice(39,41)) + (data.slice(42,44))
+	  dataINTwatthrs = parseInt(datastringwatthrs,16)
+	  	SystemVars.Write("watthrs",dataINTwatthrs);
+	  datastringfrequency = (data.slice(51,53)) + (data.slice(54,56))
+	  dataINTfrequency = parseInt(datastringfrequency,16)
+	  	SystemVars.Write
+	  datastringpf = (data.slice(57,59)) + (data.slice(60,62))
+	  dataINTpf = parseInt(datastringpf,16)
+	  SystemVars.Write("TimeOfLastDataParse", (System.GetLocalTime()));
+  }   else {
 
-    //if (buffer.length > 2)
-    //{
-        //if (buffer.charCodeAt(0) == 0x33)
-        //{
-            //var length = buffer.charCodeAt(1);
-
-           // if (buffer.length >= (length + 1))
-            //{
-           //     length += 1;
-               
-                // get the complete message
-         //       var msg = buffer.substr(0, length);
-
-                // remove the message from the buffer;
-       //         buffer = buffer.substr(length);
-               
-                // hold integer value!
-     //           var int = combineBytes(msg.substr(8, 2));
-   //         }
- //       }
-//    }
-
-//	System.Print("Integer from combined bytes is " + (int))
-
-//{																		
-  // System.Print("Serial: OnCommRX() data = (" + hexString(data) + ")"); //copied from rti paul search oncomm hex
-   
-//}
-
-
-//function hexString(str) {				// copied from rti paul forum search oncomm hex
-  //strData = '';
-  //for (var j = 0; j < str.length; j+=1) {
-    //strData += str.charCodeAt(j).toString(16) + ":";
-  //}
-
-  // lose that last colon
-  //return (strData.substr(0, strData.length - 1));
-//}
-//{
+	  SystemVars.Write
+  }
 	SystemVars.Write("RXdata", data);
 	SystemVars.Write("TimeOfLastConfirmedAction", (System.GetLocalTime()));//
-
-//if (g_debug)
-//{
-
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(0).toString(16)); //from Tcoupe forum message 
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(1).toString(16));
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(2).toString(16));
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(3).toString(16));
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(4).toString(16));
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(5).toString(16));
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(6).toString(16));
-//	System.Print("Serial: OnCommRx data; first data character we received is 0x"+data.charCodeAt(7).toString(16));
-
-	// to show how to see hex in traceviewer{
-	//PrintBytes("data", data);  // viewable in traceviewer - jeff mackie
-	//25.1.23 - After viewing in traceviewer it displays as ascii not hex, but the polling does appear to work. Might be a good idea to find a way to function call ( at runtime
-	// the timestamp and connected variable
 	
-	if (data == "\x33\x3C\x00\x00\x00\x01\x01\x71") {  //relay 1 is on
-		g_comm.HeartbeatReceived();
-		SystemVars.Write("relay1integer",1);
-	    SystemVars.Write("relay1ONboolean",true);
-	    SystemVars.Write("relay1OFFboolean",false);
-	    System.SignalEvent("relay1ONevent");	
-		}
+//if (data == "\x33\x3C\x00\x00\x00\x01\x01\x71") {  //relay 1 is on
+	//	g_comm.HeartbeatReceived();
+	//    SystemVars.Write("relay1integer",1);
+	//    SystemVars.Write("relay1ONboolean",true);
+	 //   SystemVars.Write("relay1OFFboolean",false);
+	 //   System.SignalEvent("relay1ONevent");	
+	//	}
 
 	
 }
